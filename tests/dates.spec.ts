@@ -88,3 +88,40 @@ test('one person cannot log more than 24 hours on one day', async ({
   await page.getByRole('button', { name: 'Save entry', exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
 });
+
+test('the Log time date can be typed and bad durations are blocked', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Log time', exact: true }).click();
+  await page.getByLabel('New client name').fill('Typed Date Client');
+  const dateBox = page.getByLabel('Date', { exact: true });
+  await dateBox.focus();
+  await page.keyboard.type('01102026');
+  await expect(dateBox).toHaveValue('2026-10-01');
+
+  const hours = page.getByLabel('Hours', { exact: true });
+  const minutes = page.getByLabel('Minutes', { exact: true });
+  const save = page.getByRole('button', { name: 'Save entry', exact: true });
+  const invalid = (box: typeof hours) =>
+    box.evaluate((el) => !(el as HTMLInputElement).validity.valid);
+  for (const [h, m] of [
+    ['-1', '90'],
+    ['1', '75'],
+    ['1.5', '0'],
+    ['25', '0'],
+  ]) {
+    await hours.fill(h);
+    await minutes.fill(m);
+    await save.click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    expect((await invalid(hours)) || (await invalid(minutes))).toBe(true);
+  }
+  await hours.fill('1');
+  await minutes.fill('30');
+  await save.click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: /Typed Date Client/ }).first(),
+  ).toBeVisible();
+});
