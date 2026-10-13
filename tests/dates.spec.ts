@@ -12,23 +12,14 @@ const fromToday = (days: number) => {
   return isoDate(d);
 };
 
-// Types an ISO date digit by digit in the field order the browser displays
-// (dd/mm/yyyy, mm/dd/yyyy, ...), as a person would.
+// Types a date digit by digit, as a person would. Callers use dates whose day
+// and month are equal, because Chromium lays the field out as dd/mm/yyyy on
+// some systems and mm/dd/yyyy on others (Linux CI), whatever the page locale.
 async function typeDate(page: Page, box: Locator, iso: string) {
   const [year, month, day] = iso.split('-');
-  const order = await page.evaluate(() =>
-    new Intl.DateTimeFormat(navigator.language, {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    })
-      .formatToParts(new Date(2026, 9, 1))
-      .filter((p) => p.type !== 'literal')
-      .map((p) => p.type),
-  );
-  const parts: Record<string, string> = { day, month, year };
+  expect(day).toBe(month);
   await box.focus();
-  await page.keyboard.type(order.map((t) => parts[t]).join(''));
+  await page.keyboard.type(`${day}${month}${year}`);
 }
 
 async function openPilotReview(page: Page) {
@@ -53,12 +44,15 @@ test('the review week can be typed with the keyboard', async ({
   await expect(weekBox).toHaveValue('2026-09-21');
   await expect(page.locator('.review-row')).toHaveCount(4);
 
-  // Type Thursday 1 October 2026 digit by digit, as a person would.
-  await typeDate(page, weekBox, '2026-10-01');
-  await expect(weekBox).toHaveValue('2026-10-01');
-  await expect(page.locator('.review-row')).toHaveCount(18);
+  // Type Saturday 10 October 2026: the box keeps the typed date and the view
+  // follows the week it falls in (5-11 October, which has no pilot entries).
+  await typeDate(page, weekBox, '2026-10-10');
+  await expect(weekBox).toHaveValue('2026-10-10');
+  await expect(page.getByText('Nothing in this view.')).toBeVisible();
   // Leaving the field shows the Monday that starts the chosen week.
   await weekBox.blur();
+  await expect(weekBox).toHaveValue('2026-10-05');
+  await page.getByRole('button', { name: 'Previous review week' }).click();
   await expect(weekBox).toHaveValue('2026-09-28');
   await expect(page.locator('.review-row')).toHaveCount(18);
 });
@@ -120,8 +114,8 @@ test('the Log time date can be typed and bad durations are blocked', async ({
   await page.getByRole('button', { name: 'Log time', exact: true }).click();
   await page.getByLabel('New client name').fill('Typed Date Client');
   const dateBox = page.getByLabel('Date', { exact: true });
-  await typeDate(page, dateBox, '2026-10-01');
-  await expect(dateBox).toHaveValue('2026-10-01');
+  await typeDate(page, dateBox, '2026-10-10');
+  await expect(dateBox).toHaveValue('2026-10-10');
 
   const hours = page.getByLabel('Hours', { exact: true });
   const minutes = page.getByLabel('Minutes', { exact: true });
