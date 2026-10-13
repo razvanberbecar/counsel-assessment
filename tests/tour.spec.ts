@@ -187,14 +187,8 @@ test('every page and control works without errors', async ({
     .click();
   await expect(reviewRows(page)).toHaveCount(18);
 
-  // Sidebar shortcuts (the sidebar is collapsed on phones)
+  // Logo returns to Time entries
   if (!isMobile) {
-    await page.getByRole('button', { name: /Help guide/ }).click();
-    await expect(page.getByRole('dialog')).toContainText('How Counsel works.');
-    await page.getByRole('button', { name: 'Close dialog' }).click();
-    await page.getByRole('button', { name: /Back up or restore/ }).click();
-    await expect(page.getByRole('dialog')).toContainText('Data and backups');
-    await page.getByRole('button', { name: 'Close dialog' }).click();
     await page.getByRole('link', { name: 'Counsel home' }).click();
     await expect(page.locator('tbody tr').first()).toBeVisible();
   }

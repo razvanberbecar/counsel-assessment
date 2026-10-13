@@ -2786,3 +2786,124 @@ textarea:focus-visible {
 .page-heading p {
   margin-top: 4px;
 }
+
+/* ===== Layout v2: light top navigation and centred content =====
+   Same controls and labels; only placement and styling change. */
+:root {
+  --nav-height: 64px;
+  --sidebar-bg: #ffffff;
+  --sidebar-raised: #f5f6f8;
+  --sidebar-active: #eef0fa;
+  --sidebar-border: #e3e6eb;
+  --sidebar-border-strong: #cfd4dc;
+  --sidebar-text: #525866;
+  --sidebar-text-muted: #626979;
+  --sidebar-text-strong: #1f2531;
+  --sidebar-heading: #1f2531;
+  --sidebar-accent: #4a52a3;
+  --sidebar-accent-text: #2c3266;
+  --sidebar-accent-bg: #4a52a3;
+  --sidebar-accent-ink: #ffffff;
+}
+.sidebar {
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-xs);
+}
+.sidebar button:focus-visible,
+.sidebar a:focus-visible {
+  outline-color: var(--focus-ring);
+}
+.nav-item:hover {
+  color: var(--ink);
+}
+.nav-item.active {
+  font-weight: 650;
+}
+@media (min-width: 761px) {
+  /* The sidebar becomes a fixed bar across the top. */
+  .sidebar {
+    inset: 0 0 auto 0;
+    width: auto;
+    height: var(--nav-height);
+    padding: 0 28px;
+    flex-direction: row;
+    align-items: center;
+    gap: 28px;
+    z-index: 20;
+  }
+  .brand {
+    margin: 0;
+    font-size: 24px;
+    gap: 7px;
+  }
+  .brand-symbol {
+    width: 28px;
+    height: 29px;
+    font-size: 31px;
+    line-height: 24px;
+  }
+  .brand-symbol > span {
+    left: 14px;
+    top: 3px;
+    font-size: 24px;
+  }
+  /* Firm label, captions and the sidebar card repeat what the bar shows;
+     backup and help stay available from the bar's right-hand buttons. */
+  .workspace-label,
+  .nav-caption,
+  .nav-dot,
+  .sidebar-bottom {
+    display: none;
+  }
+  .sidebar nav {
+    display: flex;
+    gap: 4px;
+  }
+  .nav-item {
+    width: auto;
+    margin: 0;
+    padding: 9px 14px;
+    gap: 8px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+  .main-shell {
+    margin-left: 0;
+    padding-top: var(--nav-height);
+  }
+  /* Data and help buttons sit at the right end of the top bar. */
+  .topbar {
+    position: fixed;
+    top: 0;
+    right: 28px;
+    z-index: 21;
+    height: var(--nav-height);
+    padding: 0;
+    background: transparent;
+    border: 0;
+  }
+  .topbar > div:first-child {
+    display: none;
+  }
+  main {
+    max-width: 1180px;
+    padding: 32px 32px 48px;
+  }
+  /* Keep review actions in reach while scrolling a long week. */
+  .bulk-toolbar {
+    position: sticky;
+    top: var(--nav-height);
+    z-index: 10;
+  }
+}
+@media (min-width: 761px) and (max-width: 1060px) {
+  .save-status {
+    display: none;
+  }
+  .nav-item {
+    padding: 8px 10px;
+  }
+}
+.sidebar .workspace-label strong {
+  color: var(--text-muted);
+}
