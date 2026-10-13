@@ -2907,3 +2907,77 @@ textarea:focus-visible {
 .sidebar .workspace-label strong {
   color: var(--text-muted);
 }
+
+/* ===== Dark theme (toggled from the top bar) =====
+   Buttons use a light indigo with dark text: white text on indigo cannot
+   meet contrast on a dark page while indigo text also stays readable. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0f131a;
+  --surface: #171c25;
+  --surface-subtle: #1b212b;
+  --surface-muted: #222935;
+  --overlay: rgb(0 0 0 / 60%);
+  --ink: #e8eaf0;
+  --ink-soft: #d3d7e0;
+  --text-muted: #aab1bf;
+  --text-subtle: #9ea6b5;
+  --text-inverse: #11152a;
+  --border: #2b3240;
+  --border-strong: #3d4556;
+  --accent: #9aa2e8;
+  --accent-hover: #aeb5ef;
+  --accent-pressed: #c0c6f3;
+  --accent-strong: #c9cff8;
+  --accent-300: #7f88d6;
+  --accent-200: #4a5290;
+  --accent-tint: #2a3060;
+  --accent-soft: #222845;
+  --focus-ring: #aeb5ef;
+  --focus-glow: rgb(154 162 232 / 25%);
+  --success: #7fc8a6;
+  --success-300: #5aa583;
+  --success-tint: #1f3a2f;
+  --success-soft: #172a22;
+  --warning: #e6b56d;
+  --warning-300: #c99545;
+  --warning-tint: #3d2f17;
+  --warning-soft: #2b2212;
+  --danger: #f0a0a6;
+  --danger-tint: #4a2226;
+  --danger-soft: #2f1a1d;
+  --sidebar-bg: #171c25;
+  --sidebar-raised: #1b212b;
+  --sidebar-active: #222845;
+  --sidebar-border: #2b3240;
+  --sidebar-border-strong: #3d4556;
+  --sidebar-text: #aab1bf;
+  --sidebar-text-muted: #9ea6b5;
+  --sidebar-text-strong: #e8eaf0;
+  --sidebar-heading: #e8eaf0;
+  --sidebar-accent: #9aa2e8;
+  --sidebar-accent-text: #c9cff8;
+  --sidebar-accent-bg: #9aa2e8;
+  --sidebar-accent-ink: #11152a;
+  --avatar-bg: #3a3329;
+  --avatar-ink: #eadfce;
+}
+[data-theme='dark'] body {
+  background: var(--bg);
+  color: var(--ink);
+}
+[data-theme='dark'] .secondary,
+[data-theme='dark'] .field textarea,
+[data-theme='dark'] .backup-option,
+[data-theme='dark'] .review-date input {
+  background: var(--surface);
+}
+[data-theme='dark'] .danger {
+  color: var(--text-inverse);
+}
+[data-theme='dark'] input:not([type='checkbox']),
+[data-theme='dark'] select,
+[data-theme='dark'] textarea {
+  background-color: var(--surface);
+  color: var(--ink);
+}

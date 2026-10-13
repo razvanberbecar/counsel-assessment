@@ -12,6 +12,8 @@ import {
   Database,
   FileText,
   HelpCircle,
+  Moon,
+  Sun,
   MoreHorizontal,
   Plus,
   Search,
@@ -46,6 +48,8 @@ import { saveEntry } from './review';
 import pilotWorkspace from './fixtures/pilot-workspace.json';
 import { EntryTable } from './components/EntryTable';
 type Toast = { text: string; undo?: () => void };
+// Per-browser display preference; kept apart from the workspace data and backups.
+const THEME_KEY = 'counsel.theme';
 export default function App() {
   const { data, save, error: storageError } = useStore();
   const [page, setPage] = useState<Page>('entries');
@@ -56,6 +60,21 @@ export default function App() {
   const [billing, setBilling] = useState('all');
   const [entryModal, setEntryModal] = useState<Entry | 'new' | null>(null);
   const [clientModal, setClientModal] = useState<Client | 'new' | null>(null);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    try {
+      return localStorage.getItem(THEME_KEY) === 'dark' ? 'dark' : 'light';
+    } catch {
+      return 'light';
+    }
+  });
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    try {
+      localStorage.setItem(THEME_KEY, theme);
+    } catch {
+      // The theme is a convenience; unavailable storage just means no memory.
+    }
+  }, [theme]);
   const [utilityModal, setUtilityModal] = useState<'help' | 'backup' | null>(
     null,
   );
@@ -153,6 +172,19 @@ export default function App() {
               }}
             >
               <Database size={16} />
+            </button>
+            <button
+              className="icon-button"
+              aria-label="Dark theme"
+              title={
+                theme === 'dark'
+                  ? 'Switch to light theme'
+                  : 'Switch to dark theme'
+              }
+              aria-pressed={theme === 'dark'}
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            >
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             </button>
             <button
               className="icon-button"

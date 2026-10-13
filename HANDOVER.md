@@ -9,17 +9,17 @@ I fixed the three reports first, since each leaves wrong billing data, then made
 - **Corrections after review (Sofia):** bulk client or billability changes now clear _Reviewed_. Undo restored a snapshot of the whole workspace. It now reverts only the affected entries, and declines with a reason if any changed since ([review.ts](src/review.ts)).
 - **Improvement:** selecting 18 rows then filtering to Meridian left "Apply to 18 selected" changing 13 hidden rows. Now actions reach only selected rows in view, and a view change clears the selection with a notice. A scope line names the action, count, hours and clients, and Undo names what it reverts. I also added a "Show N needing review" shortcut.
 - **Also:** typing into "Week of" rewrote the field on every keystroke (01/10 became 1 June). That is fixed. Time can't be future-dated or exceed 24 hours per person per day, and backups are exempt.
-- **Visual redesign:** a light top navigation bar replaces the dark sidebar, and content sits in a centred column. Slogans are replaced with page names, one-line descriptions and plain labels, and review actions stay visible while you scroll. Built with design tokens ([styles.css](src/styles.css)). Two starter tests changed wording only.
+- **Visual redesign:** a light top navigation bar replaces the dark sidebar, and content sits in a centred column. Slogans are replaced with page names, one-line descriptions and plain labels, and review actions stay visible while you scroll. Built with design tokens ([styles.css](src/styles.css)). There is also a dark theme, switched with the moon icon in the top bar and remembered per browser, separately from backups. Two starter tests changed wording only.
 
 ## Verified
 
 - `npm run check`: 49 unit/component tests and the build pass.
-- `npm run test:e2e`: 24 pass and 2 are skipped (keyboard typing on mobile). They cover each report, date entry, axe with rows selected, and a [click-through of every control](tests/tour.spec.ts) that fails on any console error. GitHub Actions passes.
+- `npm run test:e2e`: 26 pass and 2 are skipped (keyboard typing on mobile). They cover each report, date entry, axe in light and dark themes, and a [click-through of every control](tests/tour.spec.ts) that fails on any console error. GitHub Actions passes.
 - The new report and date tests fail on the untouched starter.
 
 ## Remaining
 
-Deferred: dark theme, repeat yesterday's entry, and review status in the CSV. Risks: single-level undo is lost on reload; view changes clear the selection; the future-date check trusts the device clock; client renames keep entries reviewed; no Safari or screen-reader testing.
+Deferred: repeat yesterday's entry, and review status in the CSV. Risks: single-level undo is lost on reload; view changes clear the selection; the future-date check trusts the device clock; client renames keep entries reviewed; no Safari or screen-reader testing.
 
 ## Release recommendation
 
