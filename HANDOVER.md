@@ -9,7 +9,7 @@ I fixed the three reports first, since each leaves wrong billing data, then made
 - **Corrections after review (Sofia):** bulk client or billability changes now clear _Reviewed_. Undo restored a snapshot of the whole workspace. It now reverts only the affected entries, and declines with a reason if any changed since ([review.ts](src/review.ts)).
 - **Improvement:** selecting 18 rows then filtering to Meridian left "Apply to 18 selected" changing 13 hidden rows. Now actions reach only selected rows in view, and a view change clears the selection with a notice. A scope line names the action, count, hours and clients, and Undo names what it reverts. I also added a "Show N needing review" shortcut.
 - **Also:** typing into "Week of" rewrote the field on every keystroke (01/10 became 1 June). That is fixed. Time can't be future-dated or exceed 24 hours per person per day, and backups are exempt.
-- **Plainer UI:** slogans and filler copy are gone. Each page now shows its name and one sentence saying what it is for, and dialogs and empty states use plain labels. Restyled with design tokens ([styles.css](src/styles.css)). Two starter tests changed wording only.
+- **Visual redesign:** a light top navigation bar replaces the dark sidebar, and content sits in a centred column. Slogans are replaced with page names, one-line descriptions and plain labels, and review actions stay visible while you scroll. Built with design tokens ([styles.css](src/styles.css)). Two starter tests changed wording only.
 
 ## Verified
 
