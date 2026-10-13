@@ -22,8 +22,8 @@ import {
 } from '../model';
 import {
   selectReview,
-  selectWeek,
   undoEntries,
+  undoRecord,
   updateEntries,
 } from '../review';
 import type { EntryPatch, UndoRecord } from '../review';
@@ -57,33 +57,64 @@ export function ReviewPage({
   const [operation, setOperation] = useState<UndoRecord | null>(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const weekEntries = selectWeek(data.entries, week);
-  const visible = selectReview(data.entries, data.clients, {
-    week,
-    clientId,
-    employee,
-    status,
-    search,
-  });
-  const summaryEntries = weekEntries;
-  const exportEntries = weekEntries;
-  const summary = totals(summaryEntries);
-  const selectedIds = selected.filter((id) =>
-    data.entries.some((e) => e.id === id),
-  );
+  const filters = { week, clientId, employee, status, search };
+  const visible = selectReview(data.entries, data.clients, filters);
+  // Totals and export always describe exactly the rows in view.
+  const summary = totals(visible);
+  const exportEntries = visible;
+  // Actions can only reach selected rows that are currently in view.
+  const visibleIds = new Set(visible.map((e) => e.id));
+  const selectedIds = selected.filter((id) => visibleIds.has(id));
+  const selectedEntries = visible.filter((e) => selectedIds.includes(e.id));
+  const selectedClients = [
+    ...new Set(
+      selectedEntries.map(
+        (e) => data.clients.find((c) => c.id === e.clientId)?.name ?? '',
+      ),
+    ),
+  ];
+  const targetClientName =
+    data.clients.find((c) => c.id === targetClient)?.name ?? '';
+  const actionLabels: Record<string, string> = {
+    review: 'Mark reviewed',
+    reopen: 'Return to review',
+    billable: 'Mark billable',
+    nonbillable: 'Mark non-billable',
+    client: `Move to ${targetClientName}`,
+  };
   const employees = [...new Set(data.entries.map((e) => e.employee))].sort();
+  const plural = (n: number) => `${n} ${n === 1 ? 'entry' : 'entries'}`;
+  // Changing week, filters or search clears the selection and says so, so an
+  // action never reaches rows the reviewer can no longer see.
   function changeView(update: () => void) {
     update();
+    if (selectedIds.length) {
+      setSelected([]);
+      setMessage(
+        `Selection cleared because the view changed (${plural(selectedIds.length)} were selected).`,
+      );
+    }
   }
-  function apply(ids: string[], patch: EntryPatch) {
+  function apply(
+    ids: string[],
+    patch: EntryPatch,
+    label: string,
+    keepSelection = false,
+  ) {
     setError('');
     try {
       const next = updateEntries(data, ids, patch);
       save(next);
-      setOperation({ before: data, ids });
-      setSelected([]);
+      setOperation(
+        undoRecord(`${label} (${plural(ids.length)})`, data, next, ids),
+      );
+      if (!keepSelection) setSelected([]);
+      const stillVisible = new Set(
+        selectReview(next.entries, next.clients, filters).map((e) => e.id),
+      );
+      const left = ids.filter((id) => !stillVisible.has(id)).length;
       setMessage(
-        `Updated ${ids.length} ${ids.length === 1 ? 'entry' : 'entries'}.`,
+        `${label}: ${plural(ids.length)} updated.${left ? ` ${left} no longer ${left === 1 ? 'matches' : 'match'} the filters and left this view.` : ''}`,
       );
     } catch (e) {
       setError((e as Error).message);
@@ -219,6 +250,12 @@ export function ReviewPage({
             <input
               type="checkbox"
               aria-label="Select visible entries"
+              ref={(el) => {
+                if (el)
+                  el.indeterminate =
+                    selectedIds.length > 0 &&
+                    selectedIds.length < visible.length;
+              }}
               checked={
                 visible.length > 0 && selectedIds.length === visible.length
               }
@@ -229,7 +266,20 @@ export function ReviewPage({
             />
             Select visible
           </label>
-          <span className="selection-count">{selectedIds.length} selected</span>
+          <span className="selection-count">
+            {selectedIds.length} selected
+            {selectedIds.length > 0 && (
+              <button
+                className="text-button"
+                onClick={() => {
+                  setSelected([]);
+                  setMessage('Selection cleared.');
+                }}
+              >
+                Clear
+              </button>
+            )}
+          </span>
           <select
             aria-label="Bulk action"
             value={action}
@@ -265,12 +315,18 @@ export function ReviewPage({
                   : action === 'review' || action === 'reopen'
                     ? { reviewed: action === 'review' }
                     : { billable: action === 'billable' },
+                actionLabels[action],
               )
             }
           >
             Apply to {selectedIds.length} selected
           </button>
         </div>
+        <p className="action-scope" data-testid="action-scope">
+          {selectedIds.length
+            ? `“${actionLabels[action]}” will change ${plural(selectedIds.length)} (${duration(totals(selectedEntries).total)}) from ${selectedClients.join(', ')}. Only selected rows in this view are affected.`
+            : 'Select rows below to act on them. Changing the week, filters or search clears the selection.'}
+        </p>
         {error && (
           <p className="form-error review-feedback" role="alert">
             {error}
@@ -284,17 +340,17 @@ export function ReviewPage({
               disabled={readOnly}
               onClick={() => {
                 try {
-                  save(undoEntries(operation));
+                  save(undoEntries(data, operation));
                   setOperation(null);
                   setError('');
-                  setMessage('Last review action undone.');
+                  setMessage(`Undone: ${operation.label}.`);
                 } catch (e) {
                   setError((e as Error).message);
                 }
               }}
             >
               <Undo2 size={14} />
-              Undo last action
+              Undo: {operation.label}
             </button>
           )}
         </div>
@@ -310,7 +366,7 @@ export function ReviewPage({
               const client = data.clients.find((c) => c.id === entry.clientId)!;
               return (
                 <article
-                  className="review-row"
+                  className={`review-row ${selectedIds.includes(entry.id) ? 'is-selected' : ''}`}
                   data-entry-id={entry.id}
                   key={entry.id}
                 >
@@ -351,7 +407,12 @@ export function ReviewPage({
                     disabled={readOnly}
                     aria-label={`${entry.reviewed ? 'Reopen' : 'Review'} ${entry.description || client.name}`}
                     onClick={() =>
-                      apply([entry.id], { reviewed: !entry.reviewed })
+                      apply(
+                        [entry.id],
+                        { reviewed: !entry.reviewed },
+                        entry.reviewed ? 'Return to review' : 'Mark reviewed',
+                        true,
+                      )
                     }
                   >
                     {entry.reviewed && <Check size={13} />}{' '}
@@ -375,7 +436,10 @@ export function ReviewPage({
             {visible.length} entries · {shortDate(week)} –{' '}
             {shortDate(addDays(week, 6))}
           </span>
-          <span>Export includes all entries in this view.</span>
+          <span>
+            Export includes the {plural(visible.length)} in this view; selection
+            does not change it.
+          </span>
         </div>
       </div>
     </section>
