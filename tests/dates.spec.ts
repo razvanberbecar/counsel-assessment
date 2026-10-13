@@ -1,0 +1,90 @@
+import { test, expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
+
+// The pilot customer types dates as dd/mm/yyyy.
+test.use({ locale: 'en-GB' });
+
+const isoDate = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const fromToday = (days: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return isoDate(d);
+};
+
+async function openPilotReview(page: Page) {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Manage data', exact: true }).click();
+  await page.getByRole('button', { name: /Open pilot workspace/ }).click();
+  await page.getByRole('button', { name: 'Replace and restore' }).click();
+  await page
+    .getByRole('button', { name: 'Weekly review', exact: true })
+    .click();
+}
+
+test('the review week can be typed with the keyboard', async ({ page }) => {
+  await openPilotReview(page);
+  const weekBox = page.getByLabel('Review week', { exact: true });
+  await expect(weekBox).toHaveValue('2026-09-28');
+  await page.getByRole('button', { name: 'Previous review week' }).click();
+  await expect(weekBox).toHaveValue('2026-09-21');
+  await expect(page.locator('.review-row')).toHaveCount(4);
+
+  // Type Thursday 1 October 2026 digit by digit, as a person would.
+  await weekBox.focus();
+  await page.keyboard.type('01102026');
+  await expect(weekBox).toHaveValue('2026-10-01');
+  await expect(page.locator('.review-row')).toHaveCount(18);
+  // Leaving the field shows the Monday that starts the chosen week.
+  await weekBox.blur();
+  await expect(weekBox).toHaveValue('2026-09-28');
+  await expect(page.locator('.review-row')).toHaveCount(18);
+});
+
+test('time cannot be logged for a future date', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Log time', exact: true }).click();
+  await page.getByLabel('New client name').fill('Future Client');
+  const dateBox = page.getByLabel('Date', { exact: true });
+  await expect(dateBox).toHaveAttribute('max', fromToday(0));
+  await dateBox.fill(fromToday(1));
+  await page.getByLabel('Hours', { exact: true }).fill('1');
+  await page.getByRole('button', { name: 'Save entry', exact: true }).click();
+  // The browser blocks the out-of-range date and the dialog stays open.
+  expect(
+    await dateBox.evaluate(
+      (el) => (el as HTMLInputElement).validity.rangeOverflow,
+    ),
+  ).toBe(true);
+  await expect(page.getByRole('dialog')).toBeVisible();
+  // Even without the browser hint, the app itself refuses the date.
+  await dateBox.evaluate((el) => el.removeAttribute('max'));
+  await page.getByRole('button', { name: 'Save entry', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('future date');
+  // Today is accepted.
+  await dateBox.fill(fromToday(0));
+  await page.getByRole('button', { name: 'Save entry', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(
+    page.getByRole('cell', { name: 'Future Client' }).first(),
+  ).toBeVisible();
+});
+
+test('one person cannot log more than 24 hours on one day', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Log time', exact: true }).click();
+  await page.getByLabel('New client name').fill('Long Day Client');
+  await page.getByLabel('Hours', { exact: true }).fill('20');
+  await page.getByRole('button', { name: 'Save entry', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Log time', exact: true }).click();
+  await page.getByLabel('Hours', { exact: true }).fill('5');
+  await page.getByRole('button', { name: 'Save entry', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('more than 24 hours');
+  await page.getByLabel('Hours', { exact: true }).fill('4');
+  await page.getByRole('button', { name: 'Save entry', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+});

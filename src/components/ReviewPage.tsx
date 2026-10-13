@@ -18,6 +18,7 @@ import {
   localDate,
   shortDate,
   totals,
+  validDate,
   weekStart,
 } from '../model';
 import {
@@ -47,6 +48,7 @@ export function ReviewPage({
         .at(-1) ?? localDate(),
     ),
   );
+  const [weekDraft, setWeekDraft] = useState<string | null>(null);
   const [clientId, setClientId] = useState('all');
   const [employee, setEmployee] = useState('all');
   const [status, setStatus] = useState('all');
@@ -137,11 +139,18 @@ export function ReviewPage({
             <input
               aria-label="Review week"
               type="date"
-              value={week}
-              onChange={(e) =>
-                e.target.value &&
-                changeView(() => setWeek(weekStart(e.target.value)))
-              }
+              // While the field has focus it shows what is being typed; it
+              // snaps to the week's Monday on blur. Rewriting it on every
+              // keystroke made keyboard entry impossible.
+              value={weekDraft ?? week}
+              onChange={(e) => {
+                const value = e.target.value;
+                setWeekDraft(value);
+                // Ignore partial input such as year 0002 while typing 2026.
+                if (validDate(value) && value >= '1900-01-01')
+                  changeView(() => setWeek(weekStart(value)));
+              }}
+              onBlur={() => setWeekDraft(null)}
             />
           </label>
           <button

@@ -14,7 +14,11 @@ export function EntryForm({
   onSave: (entry: Entry, client?: Client) => void;
   onClose: () => void;
 }) {
-  const [date, setDate] = useState(entry?.date ?? localDate());
+  const today = localDate();
+  // Time can only be logged once it has happened. An existing entry that is
+  // already future-dated (e.g. from an older backup) keeps its date valid.
+  const maxDate = entry && entry.date > today ? entry.date : today;
+  const [date, setDate] = useState(entry?.date ?? today);
   const [hours, setHours] = useState(
     entry ? String(Math.floor(entry.minutes / 60)) : '',
   );
@@ -108,7 +112,7 @@ export function EntryForm({
             <input
               type="date"
               min="1900-01-01"
-              max="9999-12-31"
+              max={maxDate}
               required
               value={date}
               onChange={(e) => setDate(e.target.value)}

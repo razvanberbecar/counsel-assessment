@@ -1,5 +1,11 @@
 import type { Client, Data, Entry } from './model';
-import { addDays, validateEntry } from './model';
+import {
+  addDays,
+  duration,
+  localDate,
+  shortDate,
+  validateEntry,
+} from './model';
 
 export type ReviewFilters = {
   week: string;
@@ -72,6 +78,7 @@ export function saveEntry(
   entry: Entry,
   client?: Client,
   original?: Entry,
+  today = localDate(),
 ): Data {
   const previous = data.entries.find((e) => e.id === entry.id);
   if (
@@ -83,6 +90,30 @@ export function saveEntry(
     );
   const clients = client ? [...data.clients, client] : data.clients;
   validateEntry(entry, clients);
+  // Real-world limits for logged time. They apply when time is logged or
+  // corrected, not to backups, so existing records always remain loadable.
+  if (entry.date > today && entry.date !== previous?.date)
+    throw new Error(
+      'Time can’t be logged for a future date. Choose today or an earlier date.',
+    );
+  const sameDay = data.entries
+    .filter(
+      (e) =>
+        e.id !== entry.id &&
+        e.employee === entry.employee &&
+        e.date === entry.date,
+    )
+    .reduce((n, e) => n + e.minutes, 0);
+  const unchangedDay =
+    previous?.date === entry.date && previous.employee === entry.employee;
+  // Only block saves that add time to a day that would exceed 24 hours.
+  if (
+    sameDay + entry.minutes > 1440 &&
+    entry.minutes > (unchangedDay ? previous.minutes : 0)
+  )
+    throw new Error(
+      `This would bring ${entry.employee}’s time on ${shortDate(entry.date)} to ${duration(sameDay + entry.minutes)}. One person can’t log more than 24 hours in a day.`,
+    );
   return {
     ...data,
     clients,
