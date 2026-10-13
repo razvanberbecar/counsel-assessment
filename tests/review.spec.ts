@@ -102,8 +102,23 @@ test('selection scope, correction resets review, and undo is scoped', async ({
   await expect(page.getByRole('alert')).toContainText('Undo cancelled');
   await expect(row(page, 'entry-001')).toContainText('2h 30m');
 
+  // Check the selected state (highlight, scope line, Clear) for a11y and overflow
+  await page
+    .getByRole('checkbox', { name: 'Select Shareholder agreement review' })
+    .check();
+  await expect(page.getByTestId('action-scope')).toContainText('1 entry');
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
     .analyze();
-  expect(results.violations.map((v) => v.id)).toEqual([]);
+  expect(
+    results.violations.map((v) => ({
+      id: v.id,
+      nodes: v.nodes.map((n) => [n.target, n.any[0]?.message]),
+    })),
+  ).toEqual([]);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
 });

@@ -2607,7 +2607,8 @@ tbody tr:hover {
   border-bottom: 1px solid var(--border);
 }
 .review-row.is-selected {
-  background: #f4f2fa;
+  /* Edge bar, not a tint: muted row text only just meets AA on white. */
+  box-shadow: inset 4px 0 0 var(--accent);
 }
 .selection-count .text-button {
   margin-left: 8px;
@@ -2616,4 +2617,7 @@ tbody tr:hover {
   .action-scope {
     padding-inline: 14px;
   }
+}
+.review-summary .text-button {
+  margin-top: 8px;
 }

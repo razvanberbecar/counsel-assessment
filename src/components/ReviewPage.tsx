@@ -61,6 +61,7 @@ export function ReviewPage({
   const visible = selectReview(data.entries, data.clients, filters);
   // Totals and export always describe exactly the rows in view.
   const summary = totals(visible);
+  const pending = visible.filter((e) => !e.reviewed).length;
   const exportEntries = visible;
   // Actions can only reach selected rows that are currently in view.
   const visibleIds = new Set(visible.map((e) => e.id));
@@ -192,8 +193,16 @@ export function ReviewPage({
         <div>
           <span>Reviewed in view</span>
           <strong>
-            {visible.filter((e) => e.reviewed).length} / {visible.length}
+            {visible.length - pending} / {visible.length}
           </strong>
+          {pending > 0 && status !== 'pending' && (
+            <button
+              className="text-button"
+              onClick={() => changeView(() => setStatus('pending'))}
+            >
+              Show {pending} needing review
+            </button>
+          )}
         </div>
       </div>
       <div className="entries-panel">

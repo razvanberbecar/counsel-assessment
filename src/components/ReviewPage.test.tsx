@@ -212,3 +212,17 @@ describe('Weekly review', () => {
     });
   });
 });
+
+describe('Needs-review shortcut', () => {
+  it('filters the view to entries still needing review', async () => {
+    const user = setup();
+    await user.click(
+      screen.getByRole('button', { name: 'Show 11 needing review' }),
+    );
+    expect(screen.getByLabelText('Review status')).toHaveValue('pending');
+    expect(rows()).toHaveLength(11);
+    expect(
+      screen.queryByRole('button', { name: /needing review/ }),
+    ).not.toBeInTheDocument();
+  });
+});
