@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 // The pilot customer types dates as dd/mm/yyyy.
 test.use({ locale: 'en-GB' });
@@ -12,6 +12,25 @@ const fromToday = (days: number) => {
   return isoDate(d);
 };
 
+// Types an ISO date digit by digit in the field order the browser displays
+// (dd/mm/yyyy, mm/dd/yyyy, ...), as a person would.
+async function typeDate(page: Page, box: Locator, iso: string) {
+  const [year, month, day] = iso.split('-');
+  const order = await page.evaluate(() =>
+    new Intl.DateTimeFormat(navigator.language, {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    })
+      .formatToParts(new Date(2026, 9, 1))
+      .filter((p) => p.type !== 'literal')
+      .map((p) => p.type),
+  );
+  const parts: Record<string, string> = { day, month, year };
+  await box.focus();
+  await page.keyboard.type(order.map((t) => parts[t]).join(''));
+}
+
 async function openPilotReview(page: Page) {
   await page.goto('/');
   await page.getByRole('button', { name: 'Manage data', exact: true }).click();
@@ -22,7 +41,11 @@ async function openPilotReview(page: Page) {
     .click();
 }
 
-test('the review week can be typed with the keyboard', async ({ page }) => {
+test('the review week can be typed with the keyboard', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'Phones use the native date picker, not typing');
   await openPilotReview(page);
   const weekBox = page.getByLabel('Review week', { exact: true });
   await expect(weekBox).toHaveValue('2026-09-28');
@@ -31,8 +54,7 @@ test('the review week can be typed with the keyboard', async ({ page }) => {
   await expect(page.locator('.review-row')).toHaveCount(4);
 
   // Type Thursday 1 October 2026 digit by digit, as a person would.
-  await weekBox.focus();
-  await page.keyboard.type('01102026');
+  await typeDate(page, weekBox, '2026-10-01');
   await expect(weekBox).toHaveValue('2026-10-01');
   await expect(page.locator('.review-row')).toHaveCount(18);
   // Leaving the field shows the Monday that starts the chosen week.
@@ -91,13 +113,14 @@ test('one person cannot log more than 24 hours on one day', async ({
 
 test('the Log time date can be typed and bad durations are blocked', async ({
   page,
+  isMobile,
 }) => {
+  test.skip(isMobile, 'Phones use the native date picker, not typing');
   await page.goto('/');
   await page.getByRole('button', { name: 'Log time', exact: true }).click();
   await page.getByLabel('New client name').fill('Typed Date Client');
   const dateBox = page.getByLabel('Date', { exact: true });
-  await dateBox.focus();
-  await page.keyboard.type('01102026');
+  await typeDate(page, dateBox, '2026-10-01');
   await expect(dateBox).toHaveValue('2026-10-01');
 
   const hours = page.getByLabel('Hours', { exact: true });
