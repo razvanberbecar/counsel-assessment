@@ -76,22 +76,18 @@ export function Sidebar({
           <span className="local-icon">
             <ShieldCheck size={17} />
           </span>
-          <strong>Your work, kept local.</strong>
-          <p>
-            Saved in this browser.
-            <br />
-            Back up your time for safekeeping.
-          </p>
+          <strong>Saved in this browser</strong>
+          <p>Download a backup to keep a copy.</p>
           <button
             onClick={() => {
               onBackup();
             }}
           >
-            Manage your data <ArrowUpRight size={14} />
+            Back up or restore <ArrowUpRight size={14} />
           </button>
         </div>
         <button className="help-button" onClick={() => onHelp()}>
-          <HelpCircle size={18} /> A little guidance <ArrowUpRight size={14} />
+          <HelpCircle size={18} /> Help guide <ArrowUpRight size={14} />
         </button>
         <div className="profile">
           <span className="avatar">AM</span>

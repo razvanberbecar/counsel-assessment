@@ -177,15 +177,6 @@ export function ReviewPage({
           Export view
         </button>
       </div>
-      <div className="review-progress">
-        <span className="review-emblem">
-          <ClipboardCheck size={24} />
-        </span>
-        <div>
-          <h2>Weekly review</h2>
-          <p>Check time entries and prepare this week's records.</p>
-        </div>
-      </div>
       <div className="review-summary" aria-label="Review summary">
         <div>
           <span>Entries in view</span>
@@ -217,8 +208,8 @@ export function ReviewPage({
       <div className="entries-panel">
         <div className="panel-title">
           <div>
-            <h2>Check the details.</h2>
-            <p>Select entries and update the week’s records.</p>
+            <h2>Entries</h2>
+            <p>Select entries, then choose an action.</p>
           </div>
         </div>
         <div className="filters review-filters">

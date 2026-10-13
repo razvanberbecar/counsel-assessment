@@ -28,7 +28,7 @@ test('every page and control works without errors', async ({
 
   // Help dialog
   await page.getByRole('button', { name: 'Help', exact: true }).click();
-  await expect(page.getByRole('dialog')).toContainText('A little guidance.');
+  await expect(page.getByRole('dialog')).toContainText('How Counsel works.');
   await page.getByRole('button', { name: 'Close dialog' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
 
@@ -40,7 +40,7 @@ test('every page and control works without errors', async ({
   await expect(page.locator('tbody tr')).toHaveCount(9);
   await page.getByRole('button', { name: 'Week', exact: true }).click();
   await page.getByRole('button', { name: 'Next week' }).click();
-  await expect(page.getByText('A little breathing room.')).toBeVisible();
+  await expect(page.getByText('No entries match this view')).toBeVisible();
   await page.getByRole('button', { name: 'This week', exact: true }).click();
   await expect(page.locator('tbody tr')).toHaveCount(9);
   await page
@@ -189,13 +189,11 @@ test('every page and control works without errors', async ({
 
   // Sidebar shortcuts (the sidebar is collapsed on phones)
   if (!isMobile) {
-    await page.getByRole('button', { name: /A little guidance/ }).click();
-    await expect(page.getByRole('dialog')).toContainText('A little guidance.');
+    await page.getByRole('button', { name: /Help guide/ }).click();
+    await expect(page.getByRole('dialog')).toContainText('How Counsel works.');
     await page.getByRole('button', { name: 'Close dialog' }).click();
-    await page.getByRole('button', { name: /Manage your data/ }).click();
-    await expect(page.getByRole('dialog')).toContainText(
-      'Your data, in your hands.',
-    );
+    await page.getByRole('button', { name: /Back up or restore/ }).click();
+    await expect(page.getByRole('dialog')).toContainText('Data and backups');
     await page.getByRole('button', { name: 'Close dialog' }).click();
     await page.getByRole('link', { name: 'Counsel home' }).click();
     await expect(page.locator('tbody tr').first()).toBeVisible();

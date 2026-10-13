@@ -2774,3 +2774,15 @@ textarea:focus-visible {
 .segmented {
   border-radius: var(--radius-md);
 }
+
+/* Plain, compact page header: title plus one sentence, no slogans. */
+.page-heading {
+  margin-bottom: 24px;
+}
+.page-heading h1 {
+  font-size: 24px;
+  letter-spacing: -0.4px;
+}
+.page-heading p {
+  margin-top: 4px;
+}

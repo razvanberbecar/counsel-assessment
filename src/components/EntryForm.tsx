@@ -34,11 +34,9 @@ export function EntryForm({
   const [error, setError] = useState('');
   return (
     <Modal
-      title={entry ? 'Edit time entry' : 'Make your time count.'}
+      title={entry ? 'Edit time entry' : 'Log time'}
       subtitle={
-        entry
-          ? 'Keep your record accurate and up to date.'
-          : 'Capture the work. We’ll take care of the totals.'
+        entry ? 'Change any field and save.' : 'Record time spent for a client.'
       }
       onClose={onClose}
     >

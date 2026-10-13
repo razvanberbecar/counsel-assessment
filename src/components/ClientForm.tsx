@@ -21,8 +21,8 @@ export function ClientForm({
   const [error, setError] = useState('');
   return (
     <Modal
-      title={client ? 'Edit client' : 'A new working relationship.'}
-      subtitle="Give your client a name and a little color."
+      title={client ? 'Edit client' : 'Add client'}
+      subtitle="Name the client and pick a color."
       onClose={onClose}
     >
       <form

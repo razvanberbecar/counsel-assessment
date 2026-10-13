@@ -182,32 +182,23 @@ export default function App() {
           )}
           <div className="page-heading">
             <div>
-              <div className="eyebrow">
-                {page === 'entries'
-                  ? 'A LITTLE CLARITY FOR YOUR WORKDAY'
-                  : page === 'reports'
-                    ? 'THE BIGGER PICTURE'
-                    : page === 'review'
-                      ? 'A CONFIDENT CLOSE TO THE WEEK'
-                      : 'GOOD WORK STARTS WITH GOOD RELATIONSHIPS'}
-              </div>
               <h1>
                 {page === 'entries'
-                  ? 'Time, well accounted for.'
+                  ? 'Time entries'
                   : page === 'reports'
-                    ? 'Every hour tells a story.'
+                    ? 'Reports'
                     : page === 'review'
-                      ? 'Good work. Ready for review.'
-                      : 'Your clients.'}
+                      ? 'Weekly review'
+                      : 'Clients'}
               </h1>
               <p>
                 {page === 'entries'
-                  ? 'Less time tracking. More time on what matters.'
+                  ? 'Log your time and check the totals for the week.'
                   : page === 'reports'
-                    ? 'A clear view of where your time goes.'
+                    ? 'Time per client for the selected period.'
                     : page === 'review'
-                      ? 'Bring the team’s time into focus before billing.'
-                      : 'One place for the people and businesses you work with.'}
+                      ? 'Check the team’s entries, fix mistakes and mark them reviewed before billing.'
+                      : 'The clients you log time for.'}
               </p>
             </div>
             <button
@@ -298,14 +289,14 @@ export default function App() {
                 <Stat
                   label="Billable time"
                   value={duration(summary.billable)}
-                  detail="Time that works for you"
+                  detail="Charged to clients"
                   icon={<BriefcaseBusiness size={17} />}
                   tone="green"
                 />
                 <Stat
                   label="Non-billable time"
                   value={duration(summary.nonBillable)}
-                  detail="The work behind the work"
+                  detail="Internal and admin work"
                   icon={<FileText size={17} />}
                 />
                 <Stat
@@ -313,8 +304,8 @@ export default function App() {
                   value={`${summary.utilization}%`}
                   detail={
                     summary.total
-                      ? 'Of your tracked time'
-                      : 'Log time to see your ratio'
+                      ? 'Share of time that is billable'
+                      : 'No time logged yet'
                   }
                   icon={<ChartNoAxesColumnIncreasing size={17} />}
                   progress={summary.utilization}
@@ -323,16 +314,11 @@ export default function App() {
               {range === 'week' && (
                 <section className="weekly-card" aria-label="Weekly activity">
                   <div className="weekly-intro">
-                    <div className="section-eyebrow">YOUR WEEK AT A GLANCE</div>
-                    <h2>A steady rhythm.</h2>
+                    <h2>Hours per day</h2>
                     <p>
                       {summary.total
                         ? `${duration(summary.total)} across ${activeClients} ${activeClients === 1 ? 'client' : 'clients'}.`
-                        : 'Make room for meaningful work.'}
-                      <br />
-                      {summary.total
-                        ? 'Every bit of progress adds up.'
-                        : 'Your time will take shape here.'}
+                        : 'No time logged this week.'}
                     </p>
                     <div className="chart-legend">
                       <span>
@@ -388,15 +374,7 @@ export default function App() {
                         {page === 'reports' ? activeClients : filtered.length}
                       </span>
                     </h2>
-                    <p>
-                      {page === 'reports'
-                        ? 'Understand the work behind your numbers.'
-                        : 'All the details, in good order.'}
-                    </p>
                   </div>
-                  {page === 'entries' && (
-                    <span className="subtle-label">Hours & minutes</span>
-                  )}
                 </div>
                 <div className="filters">
                   <label className="search-field">
@@ -449,13 +427,13 @@ export default function App() {
                     </div>
                     <h3>
                       {data.entries.length
-                        ? 'A little breathing room.'
-                        : 'Great work deserves a record.'}
+                        ? 'No entries match this view'
+                        : 'No time entries yet'}
                     </h3>
                     <p>
                       {data.entries.length
-                        ? 'No entries match this view. Try another week or adjust your filters.'
-                        : 'Log your first time entry and bring your workday into focus.'}
+                        ? 'Try another week or clear the filters.'
+                        : 'Log your first entry to get started.'}
                     </p>
                     <button
                       className="button primary"
@@ -569,7 +547,7 @@ export default function App() {
                   <div className="empty-icon">
                     <BriefcaseBusiness size={26} />
                   </div>
-                  <h3>Your next chapter starts here.</h3>
+                  <h3>No clients yet</h3>
                   <p>
                     Add your first client. You can also create clients while
                     logging time.
@@ -647,13 +625,6 @@ export default function App() {
               )}
             </>
           )}
-          <footer className="page-footer">
-            <span>
-              <span className="mini-brand">c.</span> A considered approach to
-              time.
-            </span>
-            <span>Made for the work that matters.</span>
-          </footer>
         </main>
       </div>
       {entryModal && (
@@ -771,27 +742,27 @@ export default function App() {
       )}
       {utilityModal === 'help' && (
         <Modal
-          title="A little guidance."
-          subtitle="A calm place to keep track of your work."
+          title="Help"
+          subtitle="How Counsel works."
           onClose={() => setUtilityModal(null)}
         >
           <div className="help-content">
-            <h3>1. Capture your time</h3>
+            <h3>1. Log time</h3>
             <p>
               Choose a date and client, enter hours and minutes, and mark the
               entry billable or non-billable. Descriptions are optional.
             </p>
-            <h3>2. Find your focus</h3>
+            <h3>2. Filter and review</h3>
             <p>
               Browse by week or all time. Search and filters update the entries,
               chart, totals, and CSV export together. Reports shows time grouped
               by client.
             </p>
-            <h3>3. Keep a copy</h3>
+            <h3>3. Back up your data</h3>
             <p>
-              Your records stay in this browser on this device. Use Manage your
-              data to download a backup and restore it later. Clearing browser
-              data removes these records.
+              Your records stay in this browser on this device. Use Back up or
+              restore to download a backup and restore it later. Clearing
+              browser data removes these records.
             </p>
             <div className="help-note">
               <ShieldCheck size={20} />
@@ -806,8 +777,8 @@ export default function App() {
       )}
       {utilityModal === 'backup' && (
         <Modal
-          title="Your data, in your hands."
-          subtitle="Back up your workspace or move it to another browser."
+          title="Data and backups"
+          subtitle="Download a backup, restore one, or open the pilot workspace."
           onClose={() => {
             setUtilityModal(null);
             setPendingRestore(null);
