@@ -369,7 +369,7 @@ export default function App() {
                 <div className="panel-title">
                   <div>
                     <h2>
-                      {page === 'reports' ? 'Time by client' : 'Time entries'}
+                      {page === 'reports' ? 'Time by client' : 'Entries'}
                       <span className="count">
                         {page === 'reports' ? activeClients : filtered.length}
                       </span>
